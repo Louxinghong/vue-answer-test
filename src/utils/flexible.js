@@ -81,7 +81,7 @@
   } else {
     doc.addEventListener(
       'DOMContentLoaded',
-      function(e) {
+      function() {
         doc.body.style.fontSize = '16px'
       },
       false

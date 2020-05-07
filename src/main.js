@@ -7,6 +7,7 @@ import Vant from 'vant'
 import 'vant/lib/index.css'
 import './styles/main.less'
 import './utils/flexible'
+import './icons'
 
 // 注册全局组件
 Object.keys(components).forEach(key => {
