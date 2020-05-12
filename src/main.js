@@ -16,6 +16,8 @@ Object.keys(components).forEach(key => {
 
 Vue.use(Vant)
 
+require('./mock')
+
 Vue.config.productionTip = false
 
 new Vue({

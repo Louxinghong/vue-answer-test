@@ -23,6 +23,14 @@ const routes = [
     name: 'Mine',
     component: () =>
       import(/* webpackChunkName: 'group-mine' */ '@/views/mine/index.vue')
+  },
+  {
+    path: '/question',
+    name: 'Question',
+    component: () =>
+      import(
+        /* webpackChunkName: 'group-question' */ '@/views/question/index.vue'
+      )
   }
 ]
 
