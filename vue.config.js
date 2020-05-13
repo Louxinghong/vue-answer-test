@@ -30,5 +30,17 @@ module.exports = {
       .use('svgo-loader')
       .loader('svgo-loader')
       .end()
+  },
+  devServer: {
+    port: 8888
+    // proxy: {
+    //   '/api': {
+    //     target: 'http://www.xxxxx.com/',
+    //     changeOrigin: true,
+    //     pathRewrite: {
+    //       '^/api': '/api'
+    //     }
+    //   }
+    // }
   }
 }
