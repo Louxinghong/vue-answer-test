@@ -1,6 +1,14 @@
 <template>
   <div class="question">
-    <div v-if="questionList.list">
+    <audio ref="audio" src="static/JY.mp3" autoplay></audio>
+    <div class="count-down" v-if="!questionList.list">{{ countDown }}</div>
+    <div v-else>
+      <van-count-down
+        millisecond
+        :time="questionTime"
+        format="HH:mm:ss:SS"
+        @finish="onTimeout"
+      />
       <p class="big-title">{{ questionList.title }}</p>
       <p class="small-title">
         {{ questionList.list[currentQuestion].title }}？
@@ -82,6 +90,9 @@ export default {
   data() {
     return {
       loading: false,
+      countDown: 3,
+      isBgmPlay: false,
+      questionTime: 10000,
       questionList: [],
       currentQuestion: 0,
       showTagList: false,
@@ -89,17 +100,33 @@ export default {
       rightNumber: 0,
       showResultDialog: false,
       second: 3,
-      timer: null
+      timerStart: null,
+      timerEnd: null
     }
   },
-  async created() {
-    try {
-      this.loading = true
-      let res = await getQuestionListById(this.$route.query.id)
-      this.questionList = res.data.data
-    } finally {
-      this.loading = false
-    }
+  created() {
+    this.timerStart = setInterval(async () => {
+      if (this.countDown <= 1) {
+        clearInterval(this.timerStart)
+        try {
+          this.loading = true
+          let res = await getQuestionListById(this.$route.query.id)
+          this.questionList = res.data.data
+        } finally {
+          this.loading = false
+        }
+      }
+      this.countDown--
+    }, 1000)
+  },
+  mounted() {
+    this.$refs.audio.addEventListener('playing', () => {
+      this.isBgmPlay = true
+    })
+    this.$refs.audio.addEventListener('ended', () => {
+      this.isBgmPlay = false
+      this.$refs.audio.play()
+    })
   },
   methods: {
     // 数字转字母
@@ -143,23 +170,35 @@ export default {
         this.$toast.fail('该题还未作答，不能查看哦')
       }
     },
+    onTimeout() {
+      this.$refs.audio.removeEventListener('playing', () => {})
+      this.$refs.audio.removeEventListener('ended', () => {})
+      this.$refs.audio.pause()
+      this.resultLoading(1)
+    },
     onSubmit() {
       this.questionList.list.forEach(item => {
         if (item.userChoose === item.answer) {
           this.rightNumber++
         }
       })
+      this.resultLoading(2)
+      this.$refs.audio.removeEventListener('playing', () => {})
+      this.$refs.audio.removeEventListener('ended', () => {})
+      this.$refs.audio.pause()
+    },
+    resultLoading(type) {
       const toast = this.$toast.loading({
         duration: 0, // 持续展示 toast
         forbidClick: true,
-        message: '加载中...'
+        message: type === 1 ? '时间到啦' : '加载中...'
       })
-      setInterval(() => {
+      this.timerEnd = setInterval(() => {
         this.second--
         if (this.second > 0) {
           toast.message = '加载中...'
         } else {
-          clearInterval(this.timer)
+          clearInterval(this.timerEnd)
           // 手动清除 Toast
           this.$toast.clear()
           this.showResultDialog = true
@@ -175,6 +214,24 @@ export default {
   min-height: 100%;
   background-color: rgb(250, 250, 151);
   padding: 1rem 0;
+
+  .count-down {
+    position: absolute;
+    font-size: 2rem;
+    font-weight: bolder;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .van-count-down {
+    position: absolute;
+    top: 0.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.4rem;
+  }
+
   .big-title {
     height: 1rem;
     margin: 0 0 1rem;
